@@ -58,7 +58,6 @@ resource "aws_security_group" "my_security_group" {
 }
 
 resource "aws_vpc" "my_vpc" {
-  cidr_block = "10.0.0.0/16"  # Replace with your desired CIDR block
-  # Add other VPC settings as needed
+  # Define your VPC details
 }
 
