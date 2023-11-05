@@ -2,11 +2,11 @@ name: Deploy to ECR
 
 on:
   push:
-    branches: [ main ]
+    branches: [ master ]
 
 jobs:
   build:
-    name: Build Image  # You can specify the name here
+    name: Build Image
     runs-on: ubuntu-latest
 
     steps:
