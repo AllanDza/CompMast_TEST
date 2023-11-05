@@ -1,6 +1,7 @@
 name: "ECR-ECS-Deployment"
 on:
-  workflow_dispatch:
+  push:
+   branches: [main]
   
 jobs:
   ECR_ECS_Deployment:
