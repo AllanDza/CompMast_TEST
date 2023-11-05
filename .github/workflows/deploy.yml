@@ -25,6 +25,13 @@ jobs:
           echo 'private_key = "${{ secrets.AWS_SSH_KEY_PRIVATE }}"' >> terraform.tfvars
           echo 'key_name = "deployer-key"' >> terraform.tfvars
 
+      - name: Create terraform.tfvars File
+        run: |
+          echo 'public_key = "${{ secrets.AWS_SSH_KEY_PUBLIC }}"' > terraform.tfvars
+          echo 'private_key = "${{ secrets.AWS_SSH_KEY_PRIVATE }}"' >> terraform.tfvars
+          echo 'key_name = "deployer-key"' >> terraform.tfvars
+        working-directory: ./terraform
+
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v1
         with:
