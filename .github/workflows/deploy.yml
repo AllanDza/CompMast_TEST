@@ -22,11 +22,12 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build Docker image
-        run: docker build .
-
-      - name: Push Docker image to Docker Hub
-        run: docker push 
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: dockerFileFolder/
+          push: true
+          tags: allandza/compressmaster:latest
 
       - name: Set up AWS CLI
         uses: aws-actions/configure-aws-credentials@v1
