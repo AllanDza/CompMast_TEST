@@ -11,7 +11,6 @@ env:
   TF_STATE_BUCKET_NAME: ${{ secrets.AWS_TF_STATE_BUCKET_NAME }}
   PRIVATE_SSH_KEY: ${{ secrets.AWS_SSH_KEY_PRIVATE }}
   PUBLIC_SSH_KEY: ${{ secrets.AWS_SSH_KEY_PUBLIC }}
-  AWS_REPOSITORY_URL: ${{ secrets.AWS_REPOSITORY_URL }}
   AWS_REGION: us-east-1
 
 jobs:
@@ -53,6 +52,10 @@ jobs:
         id: set-ip
         run: |-
           echo "::set-output name=instance_public_ip::$(terraform output instance_public_ip)"
+      - name: Use instance IP
+        run: |
+          echo "Instance IP: ${{ steps.set-ip.outputs.instance_public_ip }}"
+
 
   deploy-app:
     runs-on: ubuntu-latest
@@ -67,14 +70,16 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v1
       - name: Build, Push docker image
         env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           REPOSITORY: example-node-app
           IMAGE_TAG: ${{ github.sha }}
         run: |-
-          docker build -t $AWS_REPOSITORY_URL/$REPOSITORY:$IMAGE_TAG .
+          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
         working-directory: ./myproject
       - name: Deploy docker image to EC2
         env: 
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           REPOSITORY: example-node-app
           IMAGE_TAG: ${{ github.sha }}
           AWS_DEFAULT_REGION: us-east-1
@@ -83,7 +88,7 @@ jobs:
           host: ${{ env.SERVER_PUBLIC_IP }}
           username: ubuntu
           key: ${{ env.PRIVATE_SSH_KEY }}
-          envs: PRIVATE_SSH_KEY,REPOSITORY,IMAGE_TAG,AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY,AWS_DEFAULT_REGION,AWS_REGION
+          envs: PRIVATE_SSH_KEY,REGISTRY,REPOSITORY,IMAGE_TAG,AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY,AWS_DEFAULT_REGION,AWS_REGION
           script: |-
             sudo apt update
             sudo apt install docker.io -y
@@ -91,5 +96,5 @@ jobs:
             sudo ${aws ecr get-login --no-include-email --region us-east-1);
             sudo docker stop myappcontainer || true
             sudo docker rm myappcontainer || true
-            sudo docker pull $AWS_REPOSITORY_URL/$REPOSITORY:$IMAGE_TAG
-            sudo docker run -d --name myappcontainer -p 80:8000 $AWS_REPOSITORY_URL/$REPOSITORY:$IMAGE_TAG
+            sudo docker pull $REGISTRY/$REPOSITORY:$IMAGE_TAG
+            sudo docker run -d --name myappcontainer -p 80:8000 $REGISTRY/$REPOSITORY:$IMAGE_TAG
