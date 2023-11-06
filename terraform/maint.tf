@@ -1,82 +1,63 @@
-terraform {
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~>4.0"
-    }
-  }
-  backend "s3" {
-    key = "aws/ec2-deploy/terraform.tfstate"
-  }
-}
 provider "aws" {
-  region = var.region
+  region = "us-east-1"
 }
-resource "aws_instance" "server" {
-  ami                    = "ami-052efd3df9dad4825"
-  instance_type          = "t2.micro"
-  key_name               = aws_key_pair.deployer.key_name
-  vpc_security_group_ids = [aws_security_group.maingroup.id]
-  iam_instance_profile   = aws_iam_instance_profile.ec2-profile.name
-  connection {
-    type        = "ssh"
-    host        = self.public_ip
-    user        = "ubuntu"
-    private_key = var.private_key
-    timeout     = "4m"
-  }
-  tags = {
-    "name" = "DeployVM"
-  }
+
+resource "aws_ecs_cluster" "my_cluster" {
+  name = "my-django-cluster"
 }
-resource "aws_iam_instance_profile" "ec2-profile" {
-  name = "ec2-profile"
-  role = "EC2-ECR-AUTH"
-}
-resource "aws_security_group" "maingroup" {
-  egress = [
+
+resource "aws_ecs_task_definition" "my_task" {
+  family                   = "my-django-task"
+  network_mode             = "awsvpc"
+  requires_compatibilities = ["FARGATE"]
+
+  execution_role_arn = aws_iam_role.my_execution_role.arn
+
+  container_definitions = jsonencode([
     {
-      cidr_blocks      = ["0.0.0.0/0"]
-      description      = ""
-      from_port        = 0
-      ipv6_cidr_blocks = []
-      prefix_list_ids  = []
-      protocol         = "-1"
-      security_groups  = []
-      self             = false
-      to_port          = 0
+      name  = "my-django-app"
+      image = "your-docker-image-url/my-django-app:latest"
     }
-  ]
-  ingress = [
-    {
-      cidr_blocks      = ["0.0.0.0/0", ]
-      description      = ""
-      from_port        = 22
-      ipv6_cidr_blocks = []
-      prefix_list_ids  = []
-      protocol         = "tcp"
-      security_groups  = []
-      self             = false
-      to_port          = 22
-    },
-    {
-      cidr_blocks      = ["0.0.0.0/0", ]
-      description      = ""
-      from_port        = 80
-      ipv6_cidr_blocks = []
-      prefix_list_ids  = []
-      protocol         = "tcp"
-      security_groups  = []
-      self             = false
-      to_port          = 80
-    }
-  ]
+  ])
 }
-resource "aws_key_pair" "deployer" {
-  key_name   = var.key_name
-  public_key = var.public_key
+
+resource "aws_iam_role" "my_execution_role" {
+  name = "my-django-execution-role"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [{
+      Action = "sts:AssumeRole",
+      Effect = "Allow",
+      Principal = {
+        Service = "ecs-tasks.amazonaws.com"
+      },
+    }]
+  })
 }
-output "instance_public_ip" {
-  value     = aws_instance.server.public_ip
-  sensitive = true
+
+resource "aws_ecs_service" "my_service" {
+  name            = "my-django-service"
+  cluster         = aws_ecs_cluster.my_cluster.id
+  task_definition = aws_ecs_task_definition.my_task.arn
+  launch_type     = "FARGATE"
+  desired_count   = 1
+  network_configuration {
+    subnets = [aws_subnet.my_subnet.id]
+    security_groups = [aws_security_group.my_security_group.id]
+  }
 }
+
+resource "aws_subnet" "my_subnet" {
+  vpc_id = aws_vpc.my_vpc.id
+  # Define your subnet details
+}
+
+resource "aws_security_group" "my_security_group" {
+  vpc_id = aws_vpc.my_vpc.id
+  # Define your security group rules
+}
+
+resource "aws_vpc" "my_vpc" {
+  # Define your VPC details
+}
+
