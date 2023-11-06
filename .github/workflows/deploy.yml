@@ -26,7 +26,7 @@ jobs:
         with:
           terraform_wrapper: false
 
-      - name: Terraform Init
+      - name: Terraform init
         id: init
         run: terraform init -backend-config="bucket=$TF_STATE_BUCKET_NAME" -backend-config="region=us-east-1"
         working-directory: ./terraform
@@ -36,42 +36,13 @@ jobs:
         run: |-
           terraform plan \
           -var="region=us-east-1" \
-          
           -var="public_key=$PUBLIC_SSH_KEY" \
-          -var= "private_key=$PRIVATE_SSH_KEY"\
-          -var= "key_name=deployer-key" \
-          -out= PLAN
+          -var="private_key=$PRIVATE_SSH_KEY" \
+          -var="key_name=deployer-key" \
+          -out=PLAN
         working-directory: ./terraform
 
       - name: Terraform Apply
         id: apply
-        run: terraform apply PLAN -input=false -auto-approve
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
+        run: terraform apply PLAN 
         working-directory: ./terraform
