@@ -15,12 +15,16 @@ jobs:
 
       - name: Check if Wapiti is installed
         run: |
-          if (-Not (Test-Path (Get-Command wapiti -ErrorAction SilentlyContinue))) {
-            Write-Output "Wapiti is not installed. Installing now..."
-            choco install wapiti
-          } else {
-            Write-Output "Wapiti is already installed."
-          }
+          - name: Check if Wapiti is installed
+  run: |
+    $wapitiPath = Get-Command wapiti -ErrorAction SilentlyContinue
+    if (-Not $wapitiPath) {
+      Write-Output "Wapiti is not installed. Installing now..."
+      choco install wapiti
+    } else {
+      Write-Output "Wapiti is already installed at $($wapitiPath.Path)"
+    }
+
 
       - name: Run Wapiti Scan
         run: wapiti -u http://localhost -o ./wapiti_report
