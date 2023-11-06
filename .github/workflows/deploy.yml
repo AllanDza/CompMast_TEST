@@ -11,6 +11,7 @@ env:
   TF_STATE_BUCKET_NAME: ${{ secrets.AWS_TF_STATE_BUCKET_NAME }}
   PRIVATE_SSH_KEY: ${{ secrets.AWS_SSH_KEY_PRIVATE }}
   PUBLIC_SSH_KEY: ${{ secrets.AWS_SSH_KEY_PUBLIC }}
+  AWS_REPOSITORY_URL: ${{ secrets.AWS_REPOSITORY_URL }}
   AWS_REGION: us-east-1
 
 jobs:
@@ -58,7 +59,7 @@ jobs:
     needs: deploy-infra
     steps:
       - name: Checkout 
-        uses: actions/checkout@v3
+        uses: actions/checkout@main
       - name: Set IP env variable
         run: echo SERVER_PUBLIC_IP=${{ needs.deploy-infra.outputs.SERVER_PUBLIC_IP }} >> $GITHUB_ENV
       - name: Login to AWS ECR
