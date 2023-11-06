@@ -1,0 +1,48 @@
+name: SCA Python project
+
+on:
+  workflow_dispatch:
+  workflow_call:
+
+jobs:
+  sca:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ "windows-latest" ] # Adjust the OS as needed
+        manifest_file: [ "requirements.txt" ] # Adjust the manifest file as needed
+    runs-on: ${{ matrix.os }}
+    name: SCA Python project
+    steps:
+      - name: Checkout action
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.x # Choose the Python version you want to use
+
+      - name: Install SCA tool (CRDA)
+        run: |
+          pip install crda
+
+      - name: SCA (CRDA) Scan
+        run: |
+          crda scan --manifest ${{ matrix.manifest_file }}
+          # Add any additional options or arguments as needed
+
+      - name: Print JSON analysis report
+        run: |
+          cat crda-report.json
+
+      - name: Print SARIF analysis report
+        run: |
+          cat crda-report.sarif
+
+      - name: Print Report Link
+        run: |
+          echo "Report Link: https://example.com/reports/crda-report.html"
+
+      - name: Print Artifact Name
+        run: |
+          echo "Artifact Name: YourArtifactName"

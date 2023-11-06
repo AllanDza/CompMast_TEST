@@ -1,0 +1,33 @@
+name: Wapiti DAST Scan
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  wapiti-scan:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Check if Wapiti is installed
+        run: |
+          if not command -v wapiti &> /dev/null
+          then
+            echo "Wapiti is not installed. Installing now..."
+            choco install wapiti
+          else
+            echo "Wapiti is already installed."
+          fi
+
+      - name: Run Wapiti Scan
+        run: |
+          wapiti -u http://localhost:8080 -f html -o reports.html
+
+      - name: Upload HTML Report
+        uses: actions/upload-artifact@v3
+        with:
+          name: DAST_Report
+          path: reports.html  # Path to the Wapiti HTML report
