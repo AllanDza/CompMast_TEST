@@ -12,7 +12,7 @@ terraform {
 provider "aws" {
   region = var.region
 }
-resource "aws_instance" "servernode" {
+resource "aws_instance" "server" {
   ami                    = "ami-052efd3df9dad4825"
   instance_type          = "t2.micro"
   key_name               = aws_key_pair.deployer.key_name
@@ -31,7 +31,7 @@ resource "aws_instance" "servernode" {
 }
 resource "aws_iam_instance_profile" "ec2-profile" {
   name = "ec2-profile"
-  role = "ECR-LOGIN-AUTO"
+  role = "EC2-ECR-AUTH"
 }
 resource "aws_security_group" "maingroup" {
   egress = [
@@ -77,7 +77,6 @@ resource "aws_key_pair" "deployer" {
   public_key = var.public_key
 }
 output "instance_public_ip" {
-  value     = aws_instance.servernode.public_ip
+  value     = aws_instance.server.public_ip
   sensitive = true
 }
-
