@@ -67,7 +67,7 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v1
       - name: Build, Push docker image
         env:
-          REGISTRY: $AWS_REPOSITORY_URL
+          REGISTRY: ${{ AWS_REPOSITORY_URL }}
           REPOSITORY: example-node-app
           IMAGE_TAG: ${{ github.sha }}
         run: |-
@@ -76,7 +76,7 @@ jobs:
         working-directory: ./myproject
       - name: Deploy docker image to EC2
         env: 
-          REGISTRY: $AWS_REPOSITORY_URL
+          REGISTRY: ${{ AWS_REPOSITORY_URL }}
           REPOSITORY: example-node-app
           IMAGE_TAG: ${{ github.sha }}
           AWS_DEFAULT_REGION: us-east-1
