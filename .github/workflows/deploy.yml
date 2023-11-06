@@ -45,5 +45,33 @@ jobs:
 
       - name: Terraform Apply
         id: apply
-        run: terraform apply PLAN -input=false
+        run: terraform apply PLAN -input=false -auto-approve
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
         working-directory: ./terraform
