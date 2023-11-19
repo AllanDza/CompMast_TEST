@@ -52,8 +52,7 @@ jobs:
         id: set-ip
         run: |-
           echo "instance_public_ip=$(terraform output instance_public_ip)" >> GITHUB_OUTPUT
-      - name: Print SERVER_PUBLIC_IP in deploy-infra
-        run: echo "SERVER_PUBLIC_IP=${{ steps.set-ip.outputs.instance_public_ip }}"
+    
 
       - name: Use instance IP
         run: |-
