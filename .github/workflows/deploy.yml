@@ -52,6 +52,9 @@ jobs:
         id: set-ip
         run: |-
           echo "instance_public_ip=$(terraform output instance_public_ip)" >> GITHUB_OUTPUT
+      - name: Print SERVER_PUBLIC_IP in deploy-infra
+        run: echo "SERVER_PUBLIC_IP=${{ steps.set-ip.outputs.instance_public_ip }}"
+
       - name: Use instance IP
         run: |-
           echo "Instance IP: ${{ steps.set-ip.outputs.instance_public_ip }}"
@@ -77,15 +80,14 @@ jobs:
           docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
         working-directory: ./myproject
-      - name: Print SERVER_PUBLIC_IP before ssh-action
-        run: echo "Before SSH Action - SERVER_PUBLIC_IP=${{ env.SERVER_PUBLIC_IP }}"
+ 
       - name: Deploy docker image to EC2
         env: 
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           REPOSITORY: example-node-app
           IMAGE_TAG: ${{ github.sha }}
           AWS_DEFAULT_REGION: us-east-1
-          SERVER_PUBLIC_IP: ${{ env.SERVER_PUBLIC_IP }}
+          
           
         uses: appleboy/ssh-action@master
         with:
