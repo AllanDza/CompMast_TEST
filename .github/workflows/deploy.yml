@@ -51,13 +51,7 @@ jobs:
       - name: set output
         id: set-ip
         run: |-
-
           echo "::set-output name=instance_public_ip::$(terraform output instance_public_ip)"
-
-      - name: Use instance IP
-        run: |-
-          echo "Instance IP: ${{ steps.set-ip.outputs.instance_public_ip }}"
-
 
   deploy-app:
     runs-on: ubuntu-latest
