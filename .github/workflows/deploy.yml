@@ -83,7 +83,7 @@ jobs:
           AWS_DEFAULT_REGION: us-east-1
           
           
-        uses:  CompMast_TEST/ssh-action@main
+        uses:  AllanDza/CompMast_TEST/ssh-action@main
         with:
           host: ${{ env.SERVER_PUBLIC_IP }}
           username: ubuntu
