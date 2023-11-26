@@ -78,6 +78,6 @@ resource "aws_key_pair" "deployer" {
 }
 output "instance_public_ip" {
   value     = aws_instance.servernode.public_ip
-  sensitive = true
+  
 }
 
