@@ -47,6 +47,7 @@ jobs:
         run: terraform apply PLAN 
         working-directory: ./terraform
 
+    
       - name: Debug Terraform Output
         run: terraform output instance_public_ip
       - name: Debug Environment Variable
@@ -62,10 +63,9 @@ jobs:
       - name: Checkout 
         uses: actions/checkout@main
       - name: Debug Server Public IP
-        run: |
-          echo "Server IP: ${{ needs.deploy-infra.outputs.instance_public_ip }}"
-      -name: Set IP env variable
-        run: echo "SERVER_PUBLIC_IP=${{ needs.deploy-infra.outputs.instance_public_ip }}" >> $GITHUB_ENV
+        run: echo "Server IP: ${{ needs.deploy-infra.outputs.SERVER_PUBLIC_IP }}"
+      - name: Set IP env variable
+        run: echo "SERVER_PUBLIC_IP=${{ needs.deploy-infra.outputs.SERVER_PUBLIC_IP }}" >> $GITHUB_ENV
       
       - name: Login to AWS ECR
         id: login-ecr
@@ -89,7 +89,7 @@ jobs:
           
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ needs.deploy-infra.outputs.instance_public_ip }}
+          host: ${{ needs.deploy-infra.outputs.SERVER_PUBLIC_IP }}
           username: ubuntu
           key: ${{ secrets.AWS_SSH_KEY_PRIVATE }}
           envs: PRIVATE_SSH_KEY,REGISTRY,REPOSITORY,IMAGE_TAG,AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY,AWS_DEFAULT_REGION,AWS_REGION
@@ -102,5 +102,6 @@ jobs:
             sudo docker rm myappcontainer || true
             sudo docker pull $REGISTRY/$REPOSITORY:$IMAGE_TAG
             sudo docker run -d --name myappcontainer -p 80:8000 $REGISTRY/$REPOSITORY:$IMAGE_TAG
+
 
            
