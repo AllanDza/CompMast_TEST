@@ -17,7 +17,7 @@ jobs:
   deploy-infra:
     runs-on: ubuntu-latest
     outputs:
-      SERVER_PUBLIC_IP: ${{ steps.set-ip.outputs.instance_public_ip}}
+      SERVER_PUBLIC_IP: ${{ steps.set-ip.outputs.instance_public_ip }}
 
     steps:
       - name: Checkout code
@@ -25,8 +25,6 @@ jobs:
 
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v1
-        with:
-          terraform_wrapper: false
 
       - name: Terraform init
         id: init
@@ -35,7 +33,7 @@ jobs:
 
       - name: Terraform Plan
         id: plan
-        run: |-
+        run: |
           terraform plan \
           -var="region=us-east-1" \
           -var="public_key=$PUBLIC_SSH_KEY" \
@@ -48,9 +46,10 @@ jobs:
         id: apply
         run: terraform apply PLAN 
         working-directory: ./terraform
+
       - name: set output
         id: set-ip
-        run: |-
+        run: |
           echo "::set-output name=instance_public_ip::$(terraform output instance_public_ip)"
 
   deploy-app:
@@ -59,6 +58,9 @@ jobs:
     steps:
       - name: Checkout 
         uses: actions/checkout@main
+      - name: Debug Server Public IP
+        run: |
+          echo "Server IP: ${{ needs.deploy-infra.outputs.SERVER_PUBLIC_IP }}"
       - name: Set IP env variable
         run: echo "SERVER_PUBLIC_IP=${{ needs.deploy-infra.outputs.SERVER_PUBLIC_IP }}" >> $GITHUB_ENV
       
@@ -70,7 +72,7 @@ jobs:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           REPOSITORY: example-node-app
           IMAGE_TAG: ${{ github.sha }}
-        run: |-
+        run: |
           docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
         working-directory: ./myproject
@@ -82,14 +84,13 @@ jobs:
           IMAGE_TAG: ${{ github.sha }}
           AWS_DEFAULT_REGION: us-east-1
           
-          
-        uses:  appleboy/ssh-action@master
+        uses: appleboy/ssh-action@master
         with:
-          host: ${{ env.SERVER_PUBLIC_IP }}
+          host: ${{ needs.deploy-infra.outputs.SERVER_PUBLIC_IP }}
           username: ubuntu
-          key: "${{ env.PRIVATE_SSH_KEY }}"
+          key: ${{ secrets.AWS_SSH_KEY_PRIVATE }}
           envs: PRIVATE_SSH_KEY,REGISTRY,REPOSITORY,IMAGE_TAG,AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY,AWS_DEFAULT_REGION,AWS_REGION
-          script: |-
+          script: |
             sudo apt update
             sudo apt install docker.io -y
             sudo apt install awscli -y
@@ -98,3 +99,5 @@ jobs:
             sudo docker rm myappcontainer || true
             sudo docker pull $REGISTRY/$REPOSITORY:$IMAGE_TAG
             sudo docker run -d --name myappcontainer -p 80:8000 $REGISTRY/$REPOSITORY:$IMAGE_TAG
+
+           
