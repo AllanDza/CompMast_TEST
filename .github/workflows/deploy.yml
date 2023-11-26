@@ -47,9 +47,9 @@ jobs:
         run: terraform apply PLAN 
         working-directory: ./terraform
 
-name: Debug Terraform Output
+      - name: Debug Terraform Output
         run: terraform output instance_public_ip
-name: Debug Environment Variable
+      - name: Debug Environment Variable
         run: echo "instance_public_ip=$instance_public_ip"
       - name: Set output
         id: set-ip
@@ -64,7 +64,7 @@ name: Debug Environment Variable
       - name: Debug Server Public IP
         run: |
           echo "Server IP: ${{ needs.deploy-infra.outputs.instance_public_ip }}"
-name: Set IP env variable
+      -name: Set IP env variable
         run: echo "SERVER_PUBLIC_IP=${{ needs.deploy-infra.outputs.instance_public_ip }}" >> $GITHUB_ENV
       
       - name: Login to AWS ECR
@@ -80,7 +80,7 @@ name: Set IP env variable
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
         working-directory: ./myproject
 
-name: Deploy docker image to EC2
+      - name: Deploy docker image to EC2
         env: 
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           REPOSITORY: example-node-app
