@@ -71,3 +71,17 @@ CSRF has primarily been used to perform an action against a target site using th
   * Attack: ``
   * Evidence: `<form action="basket.jsp" method="post">`
   * Other Info: ``
+
+<!-- Tab links -->
+[Tab 1](#tab-1) | [Tab 2](#tab-2) | [Tab 3](#tab-3)
+
+<!-- Tab content -->
+## Tab 1
+Content for Tab 1 goes here.
+
+## Tab 2
+Content for Tab 2 goes here.
+
+## Tab 3
+Content for Tab 3 goes here.
+
